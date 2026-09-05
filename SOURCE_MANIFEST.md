@@ -136,7 +136,10 @@
 ## 九、RikkaHub运行层
 
 - 配置入口：`rikka/README.md`
-- RikkaHub Skill 与助手提示词只保存静态工作规则，不是正史资料源。
+- RikkaHub 固定使用 **2 个助手**：主助手负责“策划 + 正文”，独立审核助手只负责审核。
+- 主助手提示词：`rikka/assistants/main-system.md`
+- 审核助手提示词：`rikka/assistants/reviewer-system.md`
+- Skill 与助手提示词只保存静态工作规则，不是正史资料源。
 - 所有动态事实仍必须实时读取本仓库当前 HEAD。
 - RikkaHub Memory、Global Memory、Recent Chats Reference 不承担本书正史记忆。
 

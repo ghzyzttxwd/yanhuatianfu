@@ -1,39 +1,48 @@
 # RikkaHub 运行层
 
-本目录只保存 RikkaHub 的静态工作规则和助手提示词，**不保存动态正史**。动态事实始终实时读取仓库当前 HEAD。
+本项目在 RikkaHub **只创建 2 个助手**。项目内部仍有“策划 / 写作 / 审核”三种功能，但策划和写作合并到同一个主助手。
 
-## 一、导入 4 个 Skills
-在 RikkaHub「Skills → 从 GitHub 导入」分别导入：
+## 1. 导入 4 个 Skills（只导一次）
 
-- `https://github.com/ghzyzttxwd/yanhuatianfu/tree/main/rikka/skills/novel-core`
-- `https://github.com/ghzyzttxwd/yanhuatianfu/tree/main/rikka/skills/novel-planner`
-- `https://github.com/ghzyzttxwd/yanhuatianfu/tree/main/rikka/skills/novel-writer`
-- `https://github.com/ghzyzttxwd/yanhuatianfu/tree/main/rikka/skills/novel-reviewer`
+- `rikka/skills/novel-core`
+- `rikka/skills/novel-planner`
+- `rikka/skills/novel-writer`
+- `rikka/skills/novel-reviewer`
 
-## 二、只创建 1 个助手
+动态正史不放进 Skill；始终实时读取 GitHub 当前 HEAD。
 
-助手名建议：`衍化天赋·总控写作`
+## 2. 创建两个助手
 
-- System Prompt：`rikka/assistants/master-system.md`
-- Skills：启用全部 4 个 Skill
-- GitHub：允许读写本仓库
+### 主助手：`衍化天赋·策划正文`
+- System Prompt：`rikka/assistants/main-system.md`
+- Skills：`novel-core` + `novel-planner` + `novel-writer`
+- GitHub：读写
+- 职责：策划、写正文、按审核意见修改、审核通过后归档与同步资料
 
-总控助手内部按阶段执行：策划预检 → 正文写作 → 独立审核 → 自动修订 → 终验 → 只交付最终稿。
+### 审核助手：`衍化天赋·独立审核`
+- System Prompt：`rikka/assistants/reviewer-system.md`
+- Skills：`novel-core` + `novel-reviewer`
+- GitHub：需要读取全仓库；写入权限只用于 `工作稿/审核结果.md`，提示词禁止修改任何正式资料
+- 职责：独立审核并给出 PASS/FAIL
 
-**作者不参与中间审核和返工。** 可自行解决的问题不得甩给作者。
-
-## 三、统一设置
-- RikkaHub Memory：关闭
+## 3. 两个助手统一设置
+- Memory：关闭
 - Global Memory：关闭
 - Recent Chats Reference：关闭
 - Lorebook：不承担正史
-- 动态境界、资源、战力、章节、大纲不得写入 Skill
 
-## 四、日常使用
-作者通常只需要：
+## 4. 每章固定流程
 
-- `写下一章`：总控自行读取必要资料、写作、审核、返工，只返回最终正文。
-- `继续` / `下一章`：视为上一章通过；先归档、同步动态资料并校验，再继续下一章。
-- 直接指出剧情方向：总控按作者意见重做，不要求作者承担技术性查错。
+1. 对主助手说：`写下一章`。
+   - 主助手写完并保存 `工作稿/待审核正文.md`。
+2. 切到审核助手说：`审核`。
+   - 审核助手自己读待审核稿和仓库。
+   - 第一行只给 `通过` 或 `不通过`，并同步写 `工作稿/审核结果.md`。
+3. 如果 `不通过`：回主助手说 `按审核结果修改`，然后再去审核。
+4. 如果 `通过`：作者不用检查技术错误，也不用处理资料。下次回主助手说 `下一章/继续`，主助手会先验证 PASS 对应同一 revision，再自动归档上一章、同步资料、跑校验，然后写下一章。
 
-归档后必须运行 `python scripts/validate_project.py`。
+## 5. 防错机制
+
+每版待审核稿都有 revision（如 `277-r1`、`277-r2`）。审核 PASS 只对同一 revision 有效。正文一改，旧 PASS 自动作废，避免错版归档。
+
+作者只负责创作取舍和最终喜好，不负责战力、设定、连续性、资源、伏笔、人物 OOC 或 AI 味查错。

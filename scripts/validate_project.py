@@ -69,7 +69,6 @@ if state_match and manifest_match:
     if latest is not None and state_next != latest + 1:
         fail(f"下一章与实际正文不连续: 最新正文={latest}, 下一章={state_next}")
 
-    # 5. 下一章必须被且仅被一个‘当前版’动态大纲覆盖。
     covering = []
     for p in (ROOT / "动态大纲").glob("*当前版.md"):
         m = re.match(r"^(\d+)-(\d+)章", p.name)
@@ -78,31 +77,32 @@ if state_match and manifest_match:
     if len(covering) != 1:
         fail(f"下一章 {state_next} 应被且仅被一个当前版动态大纲覆盖，实际: {covering}")
 
-# 6. README 不得维护动态章节进度，避免形成第二事实源。
+# 5. README 不得维护动态章节进度。
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 if re.search(r"当前(?:下一章|进度).*\d+", readme):
     fail("README 中发现动态章节进度；动态状态只能由 Manifest/当前状态维护")
 
-# 7. RikkaHub 运行层必须完整；Skill 必须有 frontmatter，且不能硬编码动态章节事实。
+# 6. RikkaHub 两助手运行层必须完整。
 rikka_required = [
     "rikka/README.md",
     "rikka/skills/novel-core/SKILL.md",
     "rikka/skills/novel-planner/SKILL.md",
     "rikka/skills/novel-writer/SKILL.md",
     "rikka/skills/novel-reviewer/SKILL.md",
-    "rikka/assistants/master-system.md",
+    "rikka/assistants/main-system.md",
+    "rikka/assistants/reviewer-system.md",
 ]
 for rel in rikka_required:
     if not (ROOT / rel).exists():
         fail(f"缺少RikkaHub运行层文件: {rel}")
 
 for legacy in [
+    "rikka/assistants/master-system.md",
     "rikka/assistants/planner-system.md",
     "rikka/assistants/writer-system.md",
-    "rikka/assistants/reviewer-system.md",
 ]:
     if (ROOT / legacy).exists():
-        fail(f"发现已废弃的多助手提示词，可能误导配置: {legacy}")
+        fail(f"发现已废弃的助手提示词，可能误导配置: {legacy}")
 
 for skill_path in (ROOT / "rikka/skills").glob("*/SKILL.md"):
     text = skill_path.read_text(encoding="utf-8")
@@ -111,9 +111,25 @@ for skill_path in (ROOT / "rikka/skills").glob("*/SKILL.md"):
     if re.search(r"当前(?:下一章|直接创作目标)[^\n]*\d+|第\d+章《", text):
         fail(f"Skill 中发现动态章节事实硬编码: {skill_path.relative_to(ROOT)}")
 
+# 7. 如果存在待审核正文和审核结果，PASS 必须对应同一 chapter/revision。
+draft_path = ROOT / "工作稿/待审核正文.md"
+review_path = ROOT / "工作稿/审核结果.md"
+if draft_path.exists() and review_path.exists():
+    draft = draft_path.read_text(encoding="utf-8")
+    review = review_path.read_text(encoding="utf-8")
+    dc = re.search(r"^chapter:\s*(\d+)\s*$", draft, re.M)
+    dr = re.search(r"^revision:\s*([^\s]+)\s*$", draft, re.M)
+    rc = re.search(r"^chapter:\s*(\d+)\s*$", review, re.M)
+    rr = re.search(r"^revision:\s*([^\s]+)\s*$", review, re.M)
+    rv = re.search(r"^verdict:\s*(PASS|FAIL)\s*$", review, re.M)
+    if not all([dc, dr, rc, rr, rv]):
+        fail("待审核正文或审核结果缺少 chapter/revision/verdict 元数据")
+    elif rv.group(1) == "PASS" and (dc.group(1) != rc.group(1) or dr.group(1) != rr.group(1)):
+        fail("审核 PASS 对应旧版草稿：chapter/revision 与当前待审核正文不一致")
+
 if errors:
     for e in errors:
         print(f"FAIL: {e}")
     sys.exit(1)
 
-print("PASS: 项目资料入口、章节连续性、动态大纲覆盖、残留清理与RikkaHub单总控运行层检查均通过")
+print("PASS: 项目资料入口、章节连续性、动态大纲覆盖、残留清理与RikkaHub两助手运行层检查均通过")
