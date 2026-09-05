@@ -30,10 +30,15 @@ for ref in sorted(set(re.findall(r"`([^`]+\.md)`", manifest))):
         if not (ROOT / ref).exists():
             fail(f"Manifest 引用了不存在的文件: {ref}")
 
-# 2. 当前 HEAD 不允许残留已废弃的迁移/原文分片目录。
-for rel in ["migration_payload", "正文/S0原文字符分片", "正文/原文分片"]:
+# 2. 当前 HEAD 不允许残留已废弃的迁移/原文分片资料。
+for rel in [
+    "migration_payload",
+    "正文/S0原文字符分片",
+    "正文/原文分片",
+    "迁移完成说明_非正文资料.md",
+]:
     if (ROOT / rel).exists():
-        fail(f"发现应从当前 HEAD 清除的残留目录: {rel}")
+        fail(f"发现应从当前 HEAD 清除的残留: {rel}")
 
 # 3. 以实际正文文件名计算最新已归档章节。
 chapters = []
@@ -83,4 +88,4 @@ if errors:
         print(f"FAIL: {e}")
     sys.exit(1)
 
-print("PASS: 项目资料入口、章节连续性、动态大纲覆盖与残留目录检查均通过")
+print("PASS: 项目资料入口、章节连续性、动态大纲覆盖与残留资料检查均通过")
