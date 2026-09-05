@@ -10,29 +10,30 @@
 - `https://github.com/ghzyzttxwd/yanhuatianfu/tree/main/rikka/skills/novel-writer`
 - `https://github.com/ghzyzttxwd/yanhuatianfu/tree/main/rikka/skills/novel-reviewer`
 
-## 二、创建 3 个助手
+## 二、只创建 1 个助手
 
-### 总策划
-- System Prompt：`rikka/assistants/planner-system.md`
-- Skills：`novel-core` + `novel-planner`
+助手名建议：`衍化天赋·总控写作`
+
+- System Prompt：`rikka/assistants/master-system.md`
+- Skills：启用全部 4 个 Skill
 - GitHub：允许读写本仓库
 
-### 正文写手
-- System Prompt：`rikka/assistants/writer-system.md`
-- Skills：`novel-core` + `novel-writer`
-- GitHub：只读本仓库
+总控助手内部按阶段执行：策划预检 → 正文写作 → 独立审核 → 自动修订 → 终验 → 只交付最终稿。
 
-### 独立审核员
-- System Prompt：`rikka/assistants/reviewer-system.md`
-- Skills：`novel-core` + `novel-reviewer`
-- GitHub：只读本仓库
+**作者不参与中间审核和返工。** 可自行解决的问题不得甩给作者。
 
-## 三、三个助手统一设置
+## 三、统一设置
 - RikkaHub Memory：关闭
 - Global Memory：关闭
 - Recent Chats Reference：关闭
-- Lorebook：暂不承担正史
+- Lorebook：不承担正史
 - 动态境界、资源、战力、章节、大纲不得写入 Skill
 
-## 四、正式流程
-总策划定章纲 → 写手写草稿 → 审核员独立审核 → 修改 → 作者确认定稿 → 总策划归档正文并同步动态资料 → 运行 `python scripts/validate_project.py`。
+## 四、日常使用
+作者通常只需要：
+
+- `写下一章`：总控自行读取必要资料、写作、审核、返工，只返回最终正文。
+- `继续` / `下一章`：视为上一章通过；先归档、同步动态资料并校验，再继续下一章。
+- 直接指出剧情方向：总控按作者意见重做，不要求作者承担技术性查错。
+
+归档后必须运行 `python scripts/validate_project.py`。
