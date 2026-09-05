@@ -133,4 +133,11 @@
 
 检查必须通过后，才算当前HEAD资料同步完成。
 
+## 九、RikkaHub运行层
+
+- 配置入口：`rikka/README.md`
+- RikkaHub Skill 与助手提示词只保存静态工作规则，不是正史资料源。
+- 所有动态事实仍必须实时读取本仓库当前 HEAD。
+- RikkaHub Memory、Global Memory、Recent Chats Reference 不承担本书正史记忆。
+
 当前直接创作目标：**第277章《水火第六重》**。

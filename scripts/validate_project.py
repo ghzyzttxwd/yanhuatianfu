@@ -83,9 +83,31 @@ readme = (ROOT / "README.md").read_text(encoding="utf-8")
 if re.search(r"当前(?:下一章|进度).*\d+", readme):
     fail("README 中发现动态章节进度；动态状态只能由 Manifest/当前状态维护")
 
+# 7. RikkaHub 运行层必须完整；Skill 必须有 frontmatter，且不能硬编码动态章节事实。
+rikka_required = [
+    "rikka/README.md",
+    "rikka/skills/novel-core/SKILL.md",
+    "rikka/skills/novel-planner/SKILL.md",
+    "rikka/skills/novel-writer/SKILL.md",
+    "rikka/skills/novel-reviewer/SKILL.md",
+    "rikka/assistants/planner-system.md",
+    "rikka/assistants/writer-system.md",
+    "rikka/assistants/reviewer-system.md",
+]
+for rel in rikka_required:
+    if not (ROOT / rel).exists():
+        fail(f"缺少RikkaHub运行层文件: {rel}")
+
+for skill_path in (ROOT / "rikka/skills").glob("*/SKILL.md"):
+    text = skill_path.read_text(encoding="utf-8")
+    if not text.startswith("---\n") or not re.search(r"^name:\s*\S+", text, re.M) or not re.search(r"^description:\s*.+", text, re.M):
+        fail(f"Skill frontmatter 不完整: {skill_path.relative_to(ROOT)}")
+    if re.search(r"当前(?:下一章|直接创作目标)[^\n]*\d+|第\d+章《", text):
+        fail(f"Skill 中发现动态章节事实硬编码: {skill_path.relative_to(ROOT)}")
+
 if errors:
     for e in errors:
         print(f"FAIL: {e}")
     sys.exit(1)
 
-print("PASS: 项目资料入口、章节连续性、动态大纲覆盖与残留资料检查均通过")
+print("PASS: 项目资料入口、章节连续性、动态大纲覆盖、残留清理与RikkaHub运行层检查均通过")
