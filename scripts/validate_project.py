@@ -90,13 +90,19 @@ rikka_required = [
     "rikka/skills/novel-planner/SKILL.md",
     "rikka/skills/novel-writer/SKILL.md",
     "rikka/skills/novel-reviewer/SKILL.md",
-    "rikka/assistants/planner-system.md",
-    "rikka/assistants/writer-system.md",
-    "rikka/assistants/reviewer-system.md",
+    "rikka/assistants/master-system.md",
 ]
 for rel in rikka_required:
     if not (ROOT / rel).exists():
         fail(f"缺少RikkaHub运行层文件: {rel}")
+
+for legacy in [
+    "rikka/assistants/planner-system.md",
+    "rikka/assistants/writer-system.md",
+    "rikka/assistants/reviewer-system.md",
+]:
+    if (ROOT / legacy).exists():
+        fail(f"发现已废弃的多助手提示词，可能误导配置: {legacy}")
 
 for skill_path in (ROOT / "rikka/skills").glob("*/SKILL.md"):
     text = skill_path.read_text(encoding="utf-8")
@@ -110,4 +116,4 @@ if errors:
         print(f"FAIL: {e}")
     sys.exit(1)
 
-print("PASS: 项目资料入口、章节连续性、动态大纲覆盖、残留清理与RikkaHub运行层检查均通过")
+print("PASS: 项目资料入口、章节连续性、动态大纲覆盖、残留清理与RikkaHub单总控运行层检查均通过")
